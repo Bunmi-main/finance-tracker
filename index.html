@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VaultFlow - Personal Finance Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Top Navigation Bar -->
+    <header class="navbar">
+      <div class="nav-brand">
+        <div class="logo-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-name">VaultFlow</span>
+          <span class="brand-tag">Finance Tracker</span>
+        </div>
+      </div>
+
+      <div class="nav-controls">
+        <div class="currency-selector">
+          <label for="currencySelect">Currency:</label>
+          <select id="currencySelect" class="form-select-sm">
+            <option value="$" selected>USD ($)</option>
+            <option value="€">EUR (€)</option>
+            <option value="£">GBP (£)</option>
+            <option value="¥">JPY (¥)</option>
+            <option value="C$">CAD (C$)</option>
+            <option value="A$">AUD (A$)</option>
+            <option value="₹">INR (₹)</option>
+          </select>
+        </div>
+
+        <button id="btnExportData" class="btn btn-secondary btn-sm" title="Export transactions to CSV">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export CSV
+        </button>
+
+        <button id="btnBackupData" class="btn btn-secondary btn-sm" title="Backup or Restore data">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+          Data Tools
+        </button>
+
+        <button id="btnOpenAddModal" class="btn btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Transaction
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-content">
+
+      <!-- KPI Header & Period Filter -->
+      <section class="kpi-section-header">
+        <div>
+          <h1 class="main-heading">Financial Overview</h1>
+          <p class="main-subheading">Track your wealth, cash flow, and spending habits in real time</p>
+        </div>
+        <div class="period-filter-group" id="periodFilterGroup">
+          <button class="period-chip active" data-period="all">All Time</button>
+          <button class="period-chip" data-period="this-month">This Month</button>
+          <button class="period-chip" data-period="last-30">Last 30 Days</button>
+          <button class="period-chip" data-period="this-year">This Year</button>
+        </div>
+      </section>
+
+      <!-- Summary KPI Metric Cards -->
+      <section class="kpi-grid">
+        <div class="kpi-card balance-card">
+          <div class="kpi-card-header">
+            <span class="kpi-title">Total Net Balance</span>
+            <div class="kpi-icon balance-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+            </div>
+          </div>
+          <div class="kpi-value" id="kpiTotalBalance">$0.00</div>
+          <div class="kpi-footer">
+            <span class="kpi-badge" id="kpiNetBadge">Real-time Available</span>
+            <span class="kpi-sub" id="kpiTxnCount">0 records</span>
+          </div>
+        </div>
+
+        <div class="kpi-card income-card">
+          <div class="kpi-card-header">
+            <span class="kpi-title">Total Income</span>
+            <div class="kpi-icon income-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+            </div>
+          </div>
+          <div class="kpi-value text-income" id="kpiTotalIncome">$0.00</div>
+          <div class="kpi-footer">
+            <span class="kpi-sub" id="kpiIncomeCount">0 deposits logged</span>
+          </div>
+        </div>
+
+        <div class="kpi-card expense-card">
+          <div class="kpi-card-header">
+            <span class="kpi-title">Total Expenses</span>
+            <div class="kpi-icon expense-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>
+            </div>
+          </div>
+          <div class="kpi-value text-expense" id="kpiTotalExpense">$0.00</div>
+          <div class="kpi-footer">
+            <span class="kpi-sub" id="kpiExpenseRatio">0% of income</span>
+          </div>
+        </div>
+
+        <div class="kpi-card savings-card">
+          <div class="kpi-card-header">
+            <span class="kpi-title">Savings Rate</span>
+            <div class="kpi-icon savings-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+            </div>
+          </div>
+          <div class="kpi-value" id="kpiSavingsRate">0%</div>
+          <div class="kpi-progress-bar">
+            <div class="kpi-progress-fill" id="kpiSavingsFill" style="width: 0%;"></div>
+          </div>
+          <div class="kpi-footer">
+            <span class="kpi-sub" id="kpiSavingsStatus">Target: 20%+</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Charts Row -->
+      <section class="charts-row">
+        <!-- Monthly Cashflow Chart -->
+        <div class="dashboard-panel chart-panel">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">Cash Flow Dynamics</h2>
+              <p class="panel-subtitle">Monthly Income vs Expenses</p>
+            </div>
+            <div class="chart-legend">
+              <span class="legend-item"><span class="legend-dot dot-income"></span> Income</span>
+              <span class="legend-item"><span class="legend-dot dot-expense"></span> Expense</span>
+            </div>
+          </div>
+          <div class="chart-canvas-container" id="barChartContainer">
+            <canvas id="cashflowCanvas" height="240"></canvas>
+            <div id="cashflowTooltip" class="chart-tooltip"></div>
+          </div>
+        </div>
+
+        <!-- Expense Category Breakdown Chart -->
+        <div class="dashboard-panel chart-panel donut-panel">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">Expense Allocation</h2>
+              <p class="panel-subtitle">Breakdown by category</p>
+            </div>
+          </div>
+          <div class="donut-wrapper">
+            <div class="donut-canvas-container">
+              <canvas id="categoryDonutCanvas" width="180" height="180"></canvas>
+              <div class="donut-center-label">
+                <span class="donut-center-title">Spent</span>
+                <span class="donut-center-val" id="donutTotalVal">$0</span>
+              </div>
+            </div>
+            <div class="donut-legend-list" id="categoryLegendList">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Budgets & Savings Goals Row -->
+      <section class="budget-goals-row">
+        <!-- Monthly Category Budgets -->
+        <div class="dashboard-panel">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">Monthly Category Budgets</h2>
+              <p class="panel-subtitle">Monitor spending against your planned thresholds</p>
+            </div>
+            <button id="btnOpenBudgetModal" class="btn btn-ghost btn-sm">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Set Budget
+            </button>
+          </div>
+          <div class="budgets-list" id="budgetsList">
+            <!-- Dynamic Budget Items -->
+          </div>
+        </div>
+
+        <!-- Savings Target Goals -->
+        <div class="dashboard-panel">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">Savings Vaults & Targets</h2>
+              <p class="panel-subtitle">Track progress for your long-term milestones</p>
+            </div>
+            <button id="btnOpenGoalModal" class="btn btn-ghost btn-sm">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              New Goal
+            </button>
+          </div>
+          <div class="goals-list" id="goalsList">
+            <!-- Dynamic Savings Goals Items -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Transactions Master Section -->
+      <section class="dashboard-panel transactions-panel">
+        <div class="panel-header table-panel-header">
+          <div>
+            <h2 class="panel-title">Transactions Ledger</h2>
+            <p class="panel-subtitle">Comprehensive history of all incoming and outgoing flows</p>
+          </div>
+
+          <!-- Filters toolbar -->
+          <div class="table-filter-bar">
+            <!-- Search -->
+            <div class="search-input-wrap">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="search-icon"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="filterSearch" placeholder="Search transactions..." class="form-input search-input">
+            </div>
+
+            <!-- Type Filter Tabs -->
+            <div class="filter-type-group" id="filterTypeGroup">
+              <button class="filter-chip active" data-type="all">All</button>
+              <button class="filter-chip" data-type="income">Income</button>
+              <button class="filter-chip" data-type="expense">Expense</button>
+            </div>
+
+            <!-- Category Filter -->
+            <select id="filterCategory" class="form-select">
+              <option value="all">All Categories</option>
+              <!-- Dynamic Categories -->
+            </select>
+
+            <!-- Sort By -->
+            <select id="filterSort" class="form-select">
+              <option value="date-desc">Newest First</option>
+              <option value="date-asc">Oldest First</option>
+              <option value="amount-desc">Highest Amount</option>
+              <option value="amount-asc">Lowest Amount</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Table Content -->
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Category</th>
+                <th>Type</th>
+                <th class="text-right">Amount</th>
+                <th class="text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="transactionTableBody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Empty State (Conditional) -->
+        <div class="empty-state" id="emptyState" style="display: none;">
+          <div class="empty-state-icon">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          </div>
+          <h3 class="empty-state-title">No transactions found</h3>
+          <p class="empty-state-desc">Try adjusting your search criteria or log a new transaction to start tracking.</p>
+          <button class="btn btn-primary btn-sm" id="btnEmptyAdd">Add First Transaction</button>
+        </div>
+
+        <!-- Pagination & Summary Footer -->
+        <div class="table-footer">
+          <div class="table-summary" id="tableSummaryText">Showing 0 of 0 entries</div>
+          <div class="pagination-controls" id="paginationControls">
+            <button class="btn btn-icon btn-sm" id="btnPrevPage" disabled title="Previous Page">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <span class="page-indicator" id="pageIndicator">Page 1 of 1</span>
+            <button class="btn btn-icon btn-sm" id="btnNextPage" disabled title="Next Page">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- MODAL: Add / Edit Transaction -->
+  <div class="modal-backdrop" id="modalTransaction" style="display: none;">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalTxnTitle">Log Transaction</h3>
+        <button class="btn-close" id="btnCloseTxnModal">&times;</button>
+      </div>
+      <form id="formTransaction" class="modal-form">
+        <input type="hidden" id="txnId">
+
+        <!-- Type Selector Tabs -->
+        <div class="form-group">
+          <label class="form-label">Transaction Type</label>
+          <div class="type-toggle-container">
+            <label class="type-radio-label expense-active">
+              <input type="radio" name="txnType" value="expense" checked id="radioExpense">
+              <span>Expense (-)</span>
+            </label>
+            <label class="type-radio-label">
+              <input type="radio" name="txnType" value="income" id="radioIncome">
+              <span>Income (+)</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Amount and Date in 2 columns -->
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="form-label" for="txnAmount">Amount <span class="required">*</span></label>
+            <div class="input-with-prefix">
+              <span class="input-prefix" id="currencyPrefix">$</span>
+              <input type="number" id="txnAmount" step="0.01" min="0.01" placeholder="0.00" class="form-input" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="txnDate">Date <span class="required">*</span></label>
+            <input type="date" id="txnDate" class="form-input" required>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="form-group">
+          <label class="form-label" for="txnDescription">Title / Description <span class="required">*</span></label>
+          <input type="text" id="txnDescription" placeholder="e.g. Grocery store, Client Payment" class="form-input" required maxlength="80">
+        </div>
+
+        <!-- Category -->
+        <div class="form-group">
+          <label class="form-label" for="txnCategory">Category <span class="required">*</span></label>
+          <select id="txnCategory" class="form-select" required>
+            <!-- Injected by JS based on selected type -->
+          </select>
+        </div>
+
+        <!-- Notes / Memo -->
+        <div class="form-group">
+          <label class="form-label" for="txnNotes">Notes / Tags (Optional)</label>
+          <input type="text" id="txnNotes" placeholder="e.g. Work reimbursement, tax deductible" class="form-input" maxlength="120">
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" id="btnCancelTxnModal">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btnSaveTxn">Save Transaction</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: Manage Category Budget -->
+  <div class="modal-backdrop" id="modalBudget" style="display: none;">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title">Configure Category Budget</h3>
+        <button class="btn-close" id="btnCloseBudgetModal">&times;</button>
+      </div>
+      <form id="formBudget" class="modal-form">
+        <p class="modal-desc">Set a monthly spending threshold for a category. VaultFlow will track and alert when you're nearing limits.</p>
+        <div class="form-group">
+          <label class="form-label" for="budgetCategory">Expense Category</label>
+          <select id="budgetCategory" class="form-select" required>
+            <!-- Injected by JS -->
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="budgetLimit">Monthly Limit Amount</label>
+          <div class="input-with-prefix">
+            <span class="input-prefix" id="budgetCurrencyPrefix">$</span>
+            <input type="number" id="budgetLimit" step="1" min="1" placeholder="e.g. 450" class="form-input" required>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" id="btnCancelBudgetModal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Set Budget</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: Savings Goal (Create / Add Funds) -->
+  <div class="modal-backdrop" id="modalGoal" style="display: none;">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title" id="goalModalTitle">Add Savings Vault</h3>
+        <button class="btn-close" id="btnCloseGoalModal">&times;</button>
+      </div>
+      <form id="formGoal" class="modal-form">
+        <input type="hidden" id="goalId">
+        <div class="form-group">
+          <label class="form-label" for="goalName">Goal Name</label>
+          <input type="text" id="goalName" placeholder="e.g. Emergency Fund, Japan Trip" class="form-input" required maxlength="50">
+        </div>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="form-label" for="goalTarget">Target Target Amount</label>
+            <div class="input-with-prefix">
+              <span class="input-prefix" id="goalCurrencyPrefix1">$</span>
+              <input type="number" id="goalTarget" step="1" min="1" placeholder="5000" class="form-input" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="goalCurrent">Current Amount</label>
+            <div class="input-with-prefix">
+              <span class="input-prefix" id="goalCurrencyPrefix2">$</span>
+              <input type="number" id="goalCurrent" step="1" min="0" placeholder="0" class="form-input" required>
+            </div>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" id="btnCancelGoalModal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Goal</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: Add Deposit to Savings Goal -->
+  <div class="modal-backdrop" id="modalDepositGoal" style="display: none;">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title">Deposit to Goal</h3>
+        <button class="btn-close" id="btnCloseDepositModal">&times;</button>
+      </div>
+      <form id="formDepositGoal" class="modal-form">
+        <input type="hidden" id="depositGoalId">
+        <p class="modal-desc" id="depositGoalNameText">Add funds to this vault.</p>
+        <div class="form-group">
+          <label class="form-label" for="depositAmount">Deposit Amount</label>
+          <div class="input-with-prefix">
+            <span class="input-prefix" id="depositCurrencyPrefix">$</span>
+            <input type="number" id="depositAmount" step="0.01" min="0.01" placeholder="100.00" class="form-input" required>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" id="btnCancelDepositModal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Add Funds</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: Data Tools (Backup / Restore / Reset) -->
+  <div class="modal-backdrop" id="modalDataTools" style="display: none;">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title">Data Storage & Tools</h3>
+        <button class="btn-close" id="btnCloseDataTools">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">All your financial data is safely stored offline in your browser's Web Storage (localStorage).</p>
+        
+        <div class="data-tool-item">
+          <div>
+            <strong>Backup All Data (JSON)</strong>
+            <p class="text-muted text-sm">Download a complete snapshot of transactions, budgets, and goals.</p>
+          </div>
+          <button id="btnDownloadJSON" class="btn btn-secondary btn-sm">Download Backup</button>
+        </div>
+
+        <div class="data-tool-item">
+          <div>
+            <strong>Restore Backup</strong>
+            <p class="text-muted text-sm">Import previously saved JSON backup file.</p>
+          </div>
+          <label class="btn btn-secondary btn-sm file-input-label">
+            Import JSON
+            <input type="file" id="inputFileJSON" accept=".json" style="display: none;">
+          </label>
+        </div>
+
+        <div class="data-tool-item">
+          <div>
+            <strong>Load Sample Demo Data</strong>
+            <p class="text-muted text-sm">Populate the dashboard with realistic sample transactions and categories.</p>
+          </div>
+          <button id="btnLoadDemo" class="btn btn-secondary btn-sm">Load Demo</button>
+        </div>
+
+        <div class="data-tool-item danger-tool">
+          <div>
+            <strong class="text-expense">Clear All Data</strong>
+            <p class="text-muted text-sm">Permanently erase all stored transactions, budgets, and goals.</p>
+          </div>
+          <button id="btnClearAllData" class="btn btn-danger btn-sm">Wipe Everything</button>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" id="btnCloseDataToolsBtn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- App Script -->
+  <script src="app.js"></script>
+</body>
+</html>
