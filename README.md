@@ -59,3 +59,4 @@ npx serve .
 - **Markup**: HTML5 Semantic Structure
 - **Styling**: Vanilla CSS3 (Flexbox, CSS Grid, Media Queries)
 - **Scripting**: Vanilla JavaScript (Canvas API, Web Storage API, Blob API)
+
